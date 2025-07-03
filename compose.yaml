@@ -13,6 +13,12 @@ services:
             
     # api:
 
+    mqtt:
+        image: bytebeamio/rumqttd
+        ports:
+            - "1883:1883"
+            - "1884:1884"
+
 volumes:
     postgres_data:
 
