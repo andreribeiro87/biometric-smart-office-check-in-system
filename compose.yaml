@@ -1,0 +1,20 @@
+services:
+    postgres:
+        image: postgres:alpine
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - apiNetwork
+            
+    # api:
+
+volumes:
+    postgres_data:
+
+networks:
+    apiNetwork:
