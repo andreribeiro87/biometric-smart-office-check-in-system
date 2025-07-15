@@ -2,26 +2,14 @@ use crate::schema::users;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
-use rpa::Rpa;
+use validator::Validate;
 
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, ToSchema)]
 #[diesel(table_name = users)]
-#[connection_type = "POSTGRESQL"]
-#[derive(
-    AsChangeset,
-    Serialize,
-    Deserialize,
-    Queryable,
-    QueryableByName,
-    Insertable,
-    Identifiable,
-    TypeInfo,
-    Debug,
-    Clone,
-    Rpa
-)]
 pub struct User {
-    pub id: String,
+    pub id: Uuid,
     pub name: String,
     pub email: String,
     pub created_at: DateTime<Utc>,
@@ -29,34 +17,56 @@ pub struct User {
     pub fingerprint: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Insertable, Debug)]
+#[derive(Debug, Validate, Serialize, Deserialize, Insertable, ToSchema)]
 #[diesel(table_name = users)]
-pub struct NewUser {
-    pub id: String,
+pub struct CreateUserRequest {
+    #[validate(length(min = 2, max = 100))]
     pub name: String,
+
+    #[validate(email)]
     pub email: String,
+
+    // #[validate(length(min = 8))]
     pub fingerprint: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, AsChangeset, Debug)]
+
+#[derive(Debug, Validate, Serialize, Deserialize, AsChangeset, ToSchema)]
 #[diesel(table_name = users)]
-pub struct UpdateUser {
+pub struct UpdateUserRequest {
+    #[validate(length(min = 2, max = 100))]
     pub name: Option<String>,
+
+    #[validate(email)]
     pub email: Option<String>,
+
     pub fingerprint: Option<Vec<u8>>,
     pub updated_at: Option<DateTime<Utc>>,
 }
 
-impl From<NewUser> for User {
-    fn from(new_user: NewUser) -> Self {
-        let now = Utc::now();
-        User {
-            id: new_user.id,
-            name: new_user.name,
-            email: new_user.email,
-            created_at: now,
-            updated_at: now,
-            fingerprint: new_user.fingerprint,
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct UserResponse {
+    pub id: Uuid,
+    pub name: String,
+    pub email: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl From<User> for UserResponse {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct UsersListResponse {
+    pub users: Vec<UserResponse>,
+    pub total: i64,
 }

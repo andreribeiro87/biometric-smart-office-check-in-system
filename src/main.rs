@@ -1,14 +1,40 @@
-use axum::{
-    routing::get,
-    Router,
-};
+mod api;
+mod config;
+mod models;
+mod repository;
+mod schema;
+mod services;
+
+mod api_doc;
+
+use crate::config::settings::Settings;
+use api::routes::create_router;
+use axum::Router;
+use config::init_pool;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
+    let settings = Settings::new();
+    let pool = init_pool(&settings.database_url);
+    let mut app: Router<()> = Router::new();
+    let app_router = create_router(pool);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let docs =
+        SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", api_doc::ApiDoc::openapi());
+
+    // let app: OpenApiRouter<_> = OpenApiRouter::with_openapi(ApiDoc::openapi())
+    //     .nest("/api", app_router.into())
+    //     .merge(docs); // rota /swagger-ui
+    app = app.nest("/api/v1", app_router).merge(docs);
+    let addr: String = format!("{}:{}", settings.server_host, settings.server_port)
+        .parse()
+        .unwrap();
+
+    println!("Listening on {}", addr);
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
 }

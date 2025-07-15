@@ -1,3 +1,4 @@
+mod connection;
 pub mod settings;
 
-pub use settings::Settings;
+pub use connection::*;
