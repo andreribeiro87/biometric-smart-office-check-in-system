@@ -1,5 +1,5 @@
 # Dev stage
-FROM rust:1.77-slim
+FROM rust:latest
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
@@ -18,8 +18,8 @@ RUN cargo install cargo-watch
 
 COPY src ./src
 COPY migrations ./migrations
-COPY schema.rs ./src/schema.rs
+# COPY schema.rs ./src/schema.rs
 
-EXPOSE 3002
+EXPOSE 3000
 
 ENTRYPOINT ["cargo", "watch", "-x", "run"]
