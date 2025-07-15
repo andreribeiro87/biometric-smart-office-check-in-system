@@ -11,7 +11,22 @@ services:
         networks:
             - apiNetwork
             
-    # api:
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: always
+        env_file:
+            - .env
+        ports:
+            - "3002:3002"
+        depends_on:
+            postgres:
+                condition: service_healthy
+            mosquitto:
+                condition: service_healthy
+        networks:
+            - apiNetwork
 
     mosquitto:
         image: eclipse-mosquitto
