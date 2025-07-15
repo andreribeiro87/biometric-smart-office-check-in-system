@@ -6,14 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_vfs.h"
-#include "esp_spiffs.h"
 
 ImagePlusResult acquire_fingerprint_image(uint8_t *image_buf, size_t buf_size)
 {
@@ -170,7 +165,7 @@ uint8_t enroll_fingerprint(uint16_t user_id)
         return rx_buf[4];
     }
 
-    printf("Impressão digital cadastrada com sucesso!\n");
+    printf("Impressão digital enrolled com sucesso!\n");
     return ACK_SUCCESS;
 }
 
@@ -184,7 +179,6 @@ void uart_init(void)
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
     uart_param_config(UART_NUM, &uart_config);
     uart_set_pin(UART_NUM, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    // uart_driver_install(UART_NUM, 1024, 0, 0, NULL, 0);
     uart_driver_install(UART_NUM, 12288, 0, 0, NULL, 0); // 12KB buffer (maior que 3200)
 }
 
@@ -203,7 +197,7 @@ void sensor_reset(void)
     vTaskDelay(pdMS_TO_TICKS(250));
 }
 
-esp_err_t tx_rx_cmd(uint8_t *cmd_buf, size_t cmd_len, uint8_t *rx_buf, size_t rx_len, TickType_t timeout_ticks)
+esp_err_t tx_rx_cmd(const uint8_t *cmd_buf, size_t cmd_len, uint8_t *rx_buf, size_t rx_len, TickType_t timeout_ticks)
 {
     uint8_t tx_buf[8];
     uint8_t checksum = 0;
@@ -263,8 +257,7 @@ uint8_t add_user(void)
             return ACK_TIMEOUT;
         if (rx_buf[4] == ACK_SUCCESS)
             return ACK_SUCCESS;
-        else
-            return ACK_FAIL;
+        return ACK_FAIL;
     }
     return ACK_FAIL;
 }

@@ -66,8 +66,8 @@ static void mqtt_app_start(void)
 {
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.uri = MQTT_BROKER_URI
-        // .username = MQTT_USERNAME, // Se necessário
-        // .password = MQTT_PASSWORD, // Se necessário
+        // .username = MQTT_USERNAME, // Vai ser necessário
+        // .password = MQTT_PASSWORD, // Vai ser necessário
     };
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
@@ -101,7 +101,6 @@ void app_main(void)
             // enroll_fingerprint(user_id);
             // break;
 
-            // Capturar imagem da impressão digital
             uint8_t *image_buffer = malloc(IMAGE_DATA_SIZE);
             if (image_buffer != NULL)
             {
@@ -141,8 +140,6 @@ void app_main(void)
                         0);
 
                     ESP_LOGI(TAG, "Imagem publicada no MQTT, msg_id=%d", msg_id);
-                    // Salvar imagem em formato BMP
-                    // save_fingerprint_image_bmp(image_buffer, "/spiffs/fingerprint.bmp");
                 }
 
                 free(image_buffer);
@@ -152,7 +149,6 @@ void app_main(void)
         else
         {
             printf("Erro: Verifique alimentação e conexão UART.\n");
-            // vTaskDelay(pdMS_TO_TICKS(1000));
         }
     }
 }

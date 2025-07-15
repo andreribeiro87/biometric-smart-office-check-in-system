@@ -48,11 +48,10 @@ void uart_init(void);
 void gpio_init(void);
 void sensor_reset(void);
 uint8_t enroll_fingerprint(uint16_t user_id);
-// Novas funções para captura de imagem
 ImagePlusResult acquire_fingerprint_image(uint8_t *image_buf, size_t buf_size);
 esp_err_t save_fingerprint_image_bmp(uint8_t *image_data, const char *filename);
 
 uint8_t get_user_count(void);
 uint8_t add_user(void);
 uint8_t set_compare_level(uint8_t level);
-esp_err_t tx_rx_cmd(uint8_t *cmd_buf, size_t cmd_len, uint8_t *rx_buf, size_t rx_len, TickType_t timeout_ticks);
+esp_err_t tx_rx_cmd(const uint8_t *cmd_buf, size_t cmd_len, uint8_t *rx_buf, size_t rx_len, TickType_t timeout_ticks);
