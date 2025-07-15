@@ -213,4 +213,4 @@ __marimo__/
 # Added by cargo
 
 /target
-config.h
+**/**/config.h
