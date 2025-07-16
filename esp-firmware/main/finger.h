@@ -8,6 +8,9 @@
 #define UART_RX_PIN 18
 #define UART_BAUD_RATE 19200
 
+#define UART_LED_OK_PIN 48
+#define UART_LED_ERROR_PIN 47 
+
 #define FINGER_RST_PIN 4
 #define FINGER_WAKE_PIN 5
 

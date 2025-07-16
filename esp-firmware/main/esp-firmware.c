@@ -74,6 +74,21 @@ static void mqtt_app_start(void)
     esp_mqtt_client_start(mqtt_client);
 }
 
+// Function to control LED states
+static void set_led_status(bool finger_detected, bool error)
+{
+    if (error) {
+        gpio_set_level(UART_LED_ERROR_PIN, 1);  // Turn on error LED
+        gpio_set_level(UART_LED_OK_PIN, 0);     // Turn off OK LED
+    } else if (finger_detected) {
+        gpio_set_level(UART_LED_OK_PIN, 1);     // Turn on OK LED
+        gpio_set_level(UART_LED_ERROR_PIN, 0);  // Turn off error LED
+    } else {
+        gpio_set_level(UART_LED_OK_PIN, 0);     // Turn off OK LED
+        gpio_set_level(UART_LED_ERROR_PIN, 0);  // Turn off error LED
+    }
+}
+
 void app_main(void)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
@@ -107,6 +122,9 @@ void app_main(void)
                 ImagePlusResult result = acquire_fingerprint_image(image_buffer, IMAGE_DATA_SIZE);
                 if (result.code == ESP_OK)
                 {
+                    // Turn on LED when finger is detected successfully
+                    set_led_status(true, false);
+                    
                     printf("Printing image:\n");
                     for (int i = 0; i < IMAGE_DATA_SIZE; i++)
                     {
@@ -124,31 +142,47 @@ void app_main(void)
                             sprintf(&image_string[i * 2], "%02X", result.imagearray[i]);
                         }
                         image_string[IMAGE_DATA_SIZE * 2] = '\0';
+                        
+                        // // agora envia essa string para o mqtt
+                        int msg_id = esp_mqtt_client_publish(
+                            mqtt_client,
+                            "fingerprint/image",
+                            image_string,
+                            0,
+                            0,
+                            0);
+
+                        ESP_LOGI(TAG, "Imagem publicada no MQTT, msg_id=%d", msg_id);
+                        free(image_string);
                     }
                     else
                     {
                         ESP_LOGE(TAG, "Erro ao alocar memória para string de imagem");
+                        set_led_status(false, true); // Show error LED
                     }
-
-                    // // agora envia essa string para o mqtt
-                    int msg_id = esp_mqtt_client_publish(
-                        mqtt_client,
-                        "fingerprint/image",
-                        image_string,
-                        0,
-                        0,
-                        0);
-
-                    ESP_LOGI(TAG, "Imagem publicada no MQTT, msg_id=%d", msg_id);
+                }
+                else
+                {
+                    // No finger detected or error acquiring image
+                    set_led_status(false, false);
+                    printf("Nenhum dedo detectado ou erro na captura\n");
                 }
 
                 free(image_buffer);
-                free(result.imagearray);
+                if (result.imagearray != NULL) {
+                    free(result.imagearray);
+                }
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Erro ao alocar memória para buffer de imagem");
+                set_led_status(false, true); // Show error LED
             }
         }
         else
         {
             printf("Erro: Verifique alimentação e conexão UART.\n");
+            set_led_status(false, true); // Show error LED
         }
     }
 }
