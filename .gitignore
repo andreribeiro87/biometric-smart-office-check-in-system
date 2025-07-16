@@ -214,3 +214,7 @@ __marimo__/
 
 /target
 **/**/config.h
+esp-firmware/.vscode/settings.json
+.vscode/settings.json
+esp-firmware/sdkconfig.old
+esp-firmware/sdkconfig

@@ -186,6 +186,8 @@ void gpio_init(void)
 {
     gpio_set_direction(FINGER_RST_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(FINGER_WAKE_PIN, GPIO_MODE_INPUT);
+    gpio_set_direction(UART_LED_OK_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_direction(UART_LED_ERROR_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(FINGER_RST_PIN, 1);
 }
 
