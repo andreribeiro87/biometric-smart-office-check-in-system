@@ -6,7 +6,7 @@ use crate::services::user::UserService;
 use axum::{Extension, Router, routing::get};
 use rumqttc::AsyncClient;
 
-pub fn create_user_router(pool: DbPool) -> Router {
+pub fn create_user_router(pool: DbPool) -> Router<AppState> {
     let repo = UserRepo::new(pool.clone());
     let service = UserService::new(repo);
 

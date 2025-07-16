@@ -6,6 +6,7 @@ use uuid::Uuid;
 #[utoipa::path(
     get,
     path = "/users",
+tag = "users",
     responses(
         (status = 200, description = "List all users", body = UsersListResponse)
     )
@@ -27,6 +28,7 @@ pub async fn list_users(
 #[utoipa::path(
     get,
     path = "/users/{id}",
+tag = "users",
     responses(
         (status = 200, description = "User found", body = UserResponse),
         (status = 404, description = "User not found")
@@ -49,6 +51,7 @@ pub async fn get_user(
 #[utoipa::path(
     post,
     path = "/users",
+    tag = "users",
     request_body = CreateUserRequest,
     responses(
         (status = 201, description = "User created", body = UserResponse),
@@ -69,6 +72,7 @@ pub async fn create_user(
 #[utoipa::path(
     put,
     path = "/users/{id}",
+    tag = "users",
     request_body = UpdateUserRequest,
     responses(
         (status = 200, description = "User updated", body = UserResponse),
@@ -93,6 +97,7 @@ pub async fn update_user(
 #[utoipa::path(
     delete,
     path = "/users/{id}",
+    tag = "users",
     responses(
         (status = 204, description = "User deleted"),
         (status = 404, description = "User not found")

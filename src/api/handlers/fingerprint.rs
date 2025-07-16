@@ -8,10 +8,9 @@ use rumqttc::{AsyncClient, MqttOptions, QoS};
 use std::time::Duration;
 use tokio::time::sleep;
 
-// TODO change me to utils
 pub async fn mqtt_client_task(state: AppState) -> Result<(), Box<dyn std::error::Error>> {
     // Configure MQTT client
-    let mut mqttoptions = MqttOptions::new("biometric_client", "mosquitto", 1883);
+    let mut mqttoptions = MqttOptions::new("biometric_client", "0.0.0.0", 1883);
     mqttoptions.set_keep_alive(Duration::from_secs(30));
 
     // Create MQTT client
@@ -55,7 +54,15 @@ pub async fn mqtt_client_task(state: AppState) -> Result<(), Box<dyn std::error:
     }
 }
 
-// API endpoint to get the latest fingerprint data
+#[utoipa::path(
+    get,
+    path = "/fingerprint",
+    tag = "fingerprint",
+    responses(
+        (status = 200, description = "Obtém os dados mais recentes da impressão digital", body = FingerprintResponse),
+        (status = 500, description = "Erro interno do servidor")
+    )
+)]
 pub async fn get_fingerprint(
     State(state): State<AppState>,
 ) -> Result<Json<FingerprintResponse>, StatusCode> {
@@ -75,12 +82,18 @@ pub async fn get_fingerprint(
     }
 }
 
-// Health check endpoint
-async fn health_check() -> &'static str {
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "fingerprint",
+    responses(
+        (status = 200, description = "Verifica se o serviço está operacional", body = String)
+    )
+)]
+pub async fn health_check() -> &'static str {
     "OK"
 }
 
-// Aux function to convert hex data to PNG
 fn hex_to_png(hex_data: &str) -> Result<Vec<u8>, String> {
     // Parse hex into bytes
     let mut data4 = Vec::new();
@@ -129,8 +142,17 @@ fn hex_to_png(hex_data: &str) -> Result<Vec<u8>, String> {
     Ok(png_data)
 }
 
-// API endpoint to get the fingerprint image
-async fn get_image(State(state): State<AppState>) -> Result<Response, StatusCode> {
+#[utoipa::path(
+    get,
+    path = "/image",
+    tag = "fingerprint",
+    responses(
+    (status = 200, description = "Obtém a imagem PNG da impressão digital", body = String, content_type = "image/png"),
+    (status = 404, description = "Nenhum dado de impressão digital disponível"),
+    (status = 500, description = "Erro ao converter os dados em imagem")
+    )
+)]
+pub async fn get_image(State(state): State<AppState>) -> Result<Response, StatusCode> {
     let fingerprint = state.latest_fingerprint.read().await;
 
     match fingerprint.as_ref() {
